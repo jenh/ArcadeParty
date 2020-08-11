@@ -1,0 +1,29 @@
+{
+    "name": "arcade-party-nodejs",
+    "version": "2.0.0",
+    "description": "Arcade Party Demo for NodeJS",
+    "main": "index.js",
+    "scripts": {
+        "test": "node_modules/mocha/bin/_mocha \"test/**/*.js\"",
+        "reinstall": "rm -rf ./node_modules && npm install",
+        "lint": "eslint 'src/**/*.{js,ts,tsx}' 'test/**/*.{js,ts,tsx}'"
+    },
+    "dependencies": {
+        "ask-sdk": "^2.9.0",
+        "ask-sdk-controls": "^0.2.0",
+        "ask-sdk-core": "^2.8.0",
+        "ask-sdk-model": "^1.28.0",
+        "lodash": "^4.17.15"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.8",
+        "@types/lodash": "^4.14.149",
+        "chai": "^4.2.0",
+        "eslint": "^6.8.0",
+        "mocha": "^6.2.2",
+        "sinon": "^9.0.1",
+        "source-map-support": "^0.5.16"
+    },
+    "author": "Jen Harvey Hugg with assist from Amazon.com",
+    "license": "Apache-2.0"
+}

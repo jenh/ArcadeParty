@@ -1,0 +1,82 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "demo arcade party",
+            "intents": [{
+                    "name": "AMAZON.CancelIntent",
+                    "slots": [],
+                    "samples": [
+                      "cancel"
+                    ]
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "slots": [],
+                    "samples": [
+                      "help"
+                    ]
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "slots": [],
+                    "samples": [
+                      "stop",
+                      "quit",
+                      "exit",
+                      "bye",
+                      "goodbye"
+                    ]
+                },
+                {
+                    "name": "PlayAudio",
+                    "slots": [],
+                    "samples": [
+                        "start",
+			"play",
+			"open",
+                        "play arcade party",
+                        "start arcade party",
+                        "begin",
+                        "begin arcade party"
+                    ]
+                },
+                {
+                    "name": "AMAZON.PauseIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.ResumeIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.PreviousIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StartOverIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.YesIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NoIntent",
+                    "slots": [],
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NextIntent",
+                    "slots": [],
+                    "samples": []
+                }
+            ],
+            "types": []
+        }
+    }
+}
