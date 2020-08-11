@@ -2,23 +2,23 @@
 
 This is a basic port of Arcade Party, an Alexa skill that streams [Andy Hofle's Arcade Ambience project](http://www.arcade.hofle.com/) files from [archive.org](https://archive.org/details/ArcadeAmbience). 
 
-I wrote the original, published version of Arcade Party in Python with Flask-Ask, using Redis to save user/session state, and it's hosted on an EC2 server running Apache and Python WSGI. It was a quick turnaround project to get familiar with Alexa skill development before I wrote the more complicated  [Radio Fun Time](https://amzn.to/3kBM8uy).
+I originally wrote [Arcade Party](https://amzn.to/33OONuQ) in Python with Flask-Ask, using Redis to save user/session state, and it's hosted on an EC2 server running Apache and Python WSGI. It was a quick turnaround project to get familiar with Alexa skill development before I wrote the more complicated  [Radio Fun Time](https://amzn.to/3kBM8uy). It turned out the be much more popular than Radio Fun Time.
 
 This project is a quick, initial prototype for an Arcade Party clone using NodeJS, hosted on AWS Lambda with DynamoDB to save user/session state and as such, it's missing some features (like choosing a track!), while it inherits other features from the  [Amazon Alexa NodeJS Audio Player Sample](https://github.com/alexa/skill-sample-nodejs-audio-player/tree/mainline/multiple-streams) I adapted it from, like looping and shuffle. These are initial steps towards porting something more complicated (like Radio Time Warp) and my intention is to share the code and tutorial so that anyone can get a simple audioplayer skill for Alexa up and running quickly.
 
-
-This README walks you through a complete Alexa skill deployment using the command line. 
+This README walks you through a complete Alexa skill deployment using the ASK and AWS command line interface. 
 
 - [Prerequisites](#prerequisites)
 - [Create ASK and AWS User Profiles](#createaskandawsuserprofiles)
 - [Prepare the skill infrastructure](#infrastructure)
 - [Configure DynamoDB access](#configuredynamodbaccess)
 - [Customize your skill](#customizeyourskill)
+- [Clean up unused resources](#cleanup)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 - [Known Issues](#knownissues)
  
-If you find this demo and tutorial helpful, please consider contributing to [Archive.org](https://archive.org/donate). Don't forget to try out the official [Arcade Party](https://amzn.to/3ipBTYf) skill on Alexa and, if you're a big fan of classic video games, be sure to check out [8bitworkshop.com](https://8bitworkshop.com), where you can write and prototype games for classic video game systems in your browser.
+If you find this demo and tutorial helpful, please consider contributing to [Archive.org](https://archive.org/donate). Don't forget to try out the official Arcade Party skill on Alexa and, if you're a big fan of classic video games, be sure to check out [8bitworkshop.com](https://8bitworkshop.com), where you can write and prototype games for classic video game systems in your browser.
 
 
 
@@ -218,11 +218,81 @@ This project contains a JSON file that allows DynamoDB access, but restricts per
 
 You can now open `lambda/index.js` and customize your skill even further. Remember to run `ask deploy` to update your skill after any change.
 
+## Clean up unused resources<a name="cleanup"></a>
+
+Because deploying skills this way is pretty speedy, you may find yourself deploying a number of them for testing purposes. Because DynamoDB incurs billing charges, you'll want to delete DynamoDB tables and it's also good practice to delete resources you don't need, like the Lambda function and role. You can do this from the AWS console or from the command line. 
+
+**To delete unused DynamoDB tables using the AWS CLI:**
+
+1. Find the table(s) you want to delete by showing all available tables:
+
+    ```
+    $ aws dynamodb list-tables
+    ```
+2. Delete the table. Note that you don't need the full resource URI, you should be able delete with the short table name:
+
+    ```
+    $ aws dynamodb delete-table --table-name YOUR_TABLE_NAME
+    ```
+
+**To delete unused Lambda functions using the AWS CLI:**
+
+1. Find the Lambda function you want to delete by showing all available functions:
+
+    ```
+    $ aws lambda list-functions
+    ```
+2. Delete the function, you can use the Function name or Arn:
+
+    ```
+    aws lambda delete-function --function-name ask-ap_demo-default-default-12345678901
+    ```
+
+Note: Be careful here! Make sure you are deleting the correct function!
+
+**To delete unused IAM roles using the AWS CLI:**
+
+Deleting roles is a little more involved, you need to detach all policies from the role before deleting.
+
+1. Find the role you want to delete by showing all available functions:
+
+    ```
+    $ aws iam list-roles
+    ```
+2. Locate the attached policies for the role:
+
+    ```
+    $ aws iam list-attached-role-policies --role-name ap_demo
+
+    {
+      "AttachedPolicies": [
+        {
+          "PolicyName": "ap_demo_dynamodb",
+          "PolicyArn": "arn:aws:iam::123456789012:policy/ap_demo_dynamodb"
+        }
+      ]
+    }
+    ```
+
+3. Detach the policy (or policies, if applicable):
+
+    ```
+    $ aws iam detach-role-policy --role-name "ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-1DCKB83JKAELG" --policy-arn "arn:aws:iam::123456789012:policy/ap_demo_dynamodb"
+    ```
+4. Delete the role, you can use the Function name or Arn:
+
+    ```
+    aws iam delete-role --role-name ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-1DCKB83JKAELG
+    ```
+
+Note: Be careful here! Make sure you are deleting the correct function!
+
+
 ## Testing<a name="testing"></a>
 
 There are a number of ways to test your skill, and you'll probably find yourself using every one of them.
 
-You can test from an IDE, like Visual Source Code after installing the AWS extension, from the [Lambda console](https://console.aws.amazon.com/lambda), from a device (an Alexa device or the Alexa app on a mobile device), and from the [Alexa Development Console](https://developer.amazon.com/alexa/console/ask).
+You can test from an IDE (you can install the AWS extension for Visual Studio and test directly from the IDE), from the [Lambda console](https://console.aws.amazon.com/lambda), from a device (an Alexa device or the Alexa app on a mobile device), and from the [Alexa Development Console](https://developer.amazon.com/alexa/console/ask).
 
 For specific errors in NodeJS, you may need to test directly from the Lambda UI, an IDE, or the command line. To generate test cases, the Alexa Development Console is really handy, as you can type your queries, then copy the Javascript out into test cases. If you share your test cases or check them into Git, be sure to change any identifiers first (Tip: the `uuidgen` tool on Linux is handy for generating fake skill IDs).
 
