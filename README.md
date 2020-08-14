@@ -48,9 +48,9 @@ If this is your first time deploying a skill using the ASK SDK v2 with Node.js c
 
 3. Provide a name you'll remember, like `alexa-deploy`.
 
-4. When prompted, a browser window will appear and prompt you to log in. 
+4. When prompted, a browser window will appear and prompt you to log in and allow access to the Alexa Skills Kit. 
 
-5. After successfully logging in, return to your command line, type **Y** and press Enter to link the new account to your AWS account.
+5. After successfully logging in and allowing access, return to your command line, type **Y** and press Enter to link the new account to your AWS account.
 
 6. When prompted to select an AWS profile, select **Create New Profile**.
 
@@ -72,7 +72,7 @@ Now that you have prerequisites installed and configured, you can clone the proj
     $ git clone https://github.com/jenh/ArcadeParty
     ```
 
-2. Change into the `Arcade_Party` directory (`cd Arcade_Party`) and customize the following files:
+2. Change into the `ArcadeParty` directory (`cd ArcadeParty`) and customize the following files:
 
     - `lambda/index.js`: Customize your prompts. If you're new to Node.js, you should skip this step and return to it after you deploy and test the skill for the first time and have verified that it's running successfully.
    
@@ -136,12 +136,12 @@ Now that you have prerequisites installed and configured, you can clone the proj
     Note: If you closed the terminal without copying the skill ID, you can list your skills at any time by running:
 
     ```
-    ask smapi list-skills-for-vendor
+    $ ask smapi list-skills-for-vendor
     ```
 8. Re-deploy the skill:
 
     ```
-    ask deploy
+    $ ask deploy
     ```
 
 
@@ -155,7 +155,7 @@ This project contains a JSON file that allows DynamoDB access, but restricts per
     
 **To generate and attach the table-specific DynamoDB policy**:
 
-1. Double-check that the Resource in `policies/DynamoDBSecureTable.json` matches what you set in `lambda/constants.js`. If it doesn't match, edit it within `policies/DynamoDBSecureTable.json`. If you decide to change `constants.js` instead, be sure to run `aws redeploy` again. If you run the following `grep` command, the output should look like the following, where `ap_demo` is the database name you are using:
+1. Verify that the Resource in `policies/DynamoDBSecureTable.json` matches what you set in `lambda/constants.js`. If it doesn't match, edit it within `policies/DynamoDBSecureTable.json`. If you decide to change `constants.js` instead, be sure to run `aws redeploy` again. If you run the following `grep` command, the output should look like the following, where `ap_demo` is the database name you are using:
 
     ```
     $ grep Resource.*arn policies/DynamoDBSecureTable.json && grep dynamo lambda/constants.js 
