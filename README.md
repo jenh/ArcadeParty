@@ -4,9 +4,9 @@ This is a basic port of Arcade Party, an Alexa skill that streams [Andy Hofle's 
 
 I originally wrote [Arcade Party](https://amzn.to/33OONuQ) in Python with Flask-Ask, using Redis to save user/session state, and it's hosted on an EC2 server running Apache and Python WSGI. It was a quick turnaround project to get familiar with Alexa skill development before I wrote the more complicated  [Radio Fun Time](https://amzn.to/3kBM8uy). It turned out the be much more popular than Radio Fun Time.
 
-This project is a quick, initial prototype for an Arcade Party clone using NodeJS, hosted on AWS Lambda with DynamoDB to save user/session state and as such, it's missing some features (like choosing a track!), while it inherits other features from the  [Amazon Alexa NodeJS Audio Player Sample](https://github.com/alexa/skill-sample-nodejs-audio-player/tree/mainline/multiple-streams) I adapted it from, like looping and shuffle. These are initial steps towards porting something more complicated (like Radio Time Warp) and my intention is to share the code and tutorial so that anyone can get a simple audioplayer skill for Alexa up and running quickly.
+The project I'm sharing in this tutorial is a quick, initial prototype for an Arcade Party clone using NodeJS, hosted on AWS Lambda with DynamoDB to save user/session state. As this is a quick prototype, it's missing some features (like explicitly choosing a track by year--you instead navigate using Next and Previous), while it inherits other features from the  [Amazon Alexa NodeJS Audio Player Sample](https://github.com/alexa/skill-sample-nodejs-audio-player/tree/mainline/multiple-streams) I adapted it from, like looping and shuffle. These are initial steps towards porting something more complicated and my intention with this tutorial is to share the code and tutorial so that anyone can get a simple audioplayer skill for Alexa up and running quickly so that they can concentrate on their skill logic vs. deployment.
 
-This README walks you through a complete Alexa skill deployment using the ASK and AWS command line interface. 
+What follows is a complete walkthrough of Alexa skill deployment using the ASK and AWS command line interface. We don't use the browser at all, unless you count authentication pop-ups when you configure your ASK and AWS client credentials---so, conceivably, a daring person could script the entire deployment! 
 
 - [Prerequisites](#prerequisites)
 - [Create ASK and AWS User Profiles](#createaskandawsuserprofiles)
@@ -16,10 +16,11 @@ This README walks you through a complete Alexa skill deployment using the ASK an
 - [Clean up unused resources](#cleanup)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
-- [Known Issues](#knownissues)
  
+---
 If you find this demo and tutorial helpful, please consider contributing to [Archive.org](https://archive.org/donate). Don't forget to try out the official Arcade Party skill on Alexa and, if you're a big fan of classic video games, be sure to check out [8bitworkshop.com](https://8bitworkshop.com), where you can write and prototype games for classic video game systems in your browser.
 
+---
 
 
 ## Prerequisites<a name="prerequisites"></a>
@@ -35,14 +36,14 @@ Before you begin, you'll need the following:
 
 ## Create ASK and AWS User Profiles<a name="createaskandawsuserprofiles"></a>
 
-If this is your first time deploying a skill using the ASK SDK v2 with Node.js command line interface, you should re-run `ask configure` to generate both a new IAM user and profile with the permissions you'll need to deploy. Even if it's not your first skill deployment, creating a new profile helps ensure that you don't run into permissions problems later.
+If this is your first time deploying a skill using the ASK SDK v2 command line interface, you should re-run `ask configure` to generate both a new IAM user and profile with the permissions you'll need to deploy. Even if it's not your first skill deployment, creating a new profile helps ensure that you don't run into permissions problems later.
 
 **To create and use a new IAM account for ASK:**
 
 1. At the command line, run:
 
     ```
-    ask configure
+    $ ask configure
     ```
 2. When prompted to select an ASK profile, select **Create New Profile**.
 
@@ -64,7 +65,7 @@ If this is your first time deploying a skill using the ASK SDK v2 with Node.js c
 
 ## Prepare the skill infrastructure<a name="infrastructure"></a>
 
-Now that you have prerequisites installed and configured, you can clone the project, and prepare the skill infrastructure for your first deployment.
+Now that you have installed and configured your prerequisites, you can clone the project and prepare the skill infrastructure for your first deployment.
 
 1. Clone the project onto your system:
 
@@ -74,7 +75,7 @@ Now that you have prerequisites installed and configured, you can clone the proj
 
 2. Change into the `ArcadeParty` directory (`cd ArcadeParty`) and customize the following files:
 
-    - `lambda/index.js`: Customize your prompts. If you're new to Node.js, you should skip this step and return to it after you deploy and test the skill for the first time and have verified that it's running successfully.
+    - `lambda/index.js`: Customize your prompts. If you're new to Node.js, you may want to skip this step initially and return to it after you deploy and interact with the skill for the first time.
    
     - `lambda/constants.js`: Optionally, specify a new `dynamoDBTableName`, and add links and titles for the mp3s you want to use. Leave the Alexa skill ID empty for now as we won't have one until we deploy.
 
@@ -84,7 +85,7 @@ Now that you have prerequisites installed and configured, you can clone the proj
     
     - `skill-package/skill.json`: Change metadata as needed for your project. Update the icons to your own icons. The arcade photo used here is courtesy Rob Boudon via Wikimedia Commons ([CC BY 2.0](http://creativecommons.org/licenses/by/2.0)).
     
-    - `skill-package/interactionModels/custom/en-US.json`: Change invocationName (this must be entered in lower case) and, optionally, add or remove sample utterances as needed. As with `index.js`, it's a good idea to wait until the skill is deployed and working to customize utterances.
+    - `skill-package/interactionModels/custom/en-US.json`: Change `invocationName` (this must be entered in lower case). Because the skill is still in development, it's fine if it collides with another skill name, you can always change it and re-deploy. At this stage, you just want it to be something easy for Alexa to pick out when you test. If you later want to certify the skill, remember to make it as unique and as simple to invoke as possible to avoid collisions with other published skills' namespaces. Optionally, add or remove sample utterances and slots as needed; but, as with `index.js`, it's a good idea to wait until the skill is deployed and working to customize utterances.
     
 
 3. Initiate the Alexa skill project:
@@ -147,7 +148,7 @@ Now that you have prerequisites installed and configured, you can clone the proj
 
 ## Configure DynamoDB access<a name="configuredynamodbaccess"></a>
 
-The skill and Lambda function are now deployed to the AWS Cloud, but it won't work just yet. The Lambda function needs permission to access DynamoDB in order to create and update the table that holds user metadata (user and session IDs and state, including current track, audio offset, and playback preferences). Otherwise, the skill will fail on launch.
+The skill and Lambda function are now deployed to the AWS Cloud, but it won't work just yet. The Lambda function must have permission to access DynamoDB in order to create and update the table that holds user metadata (user and session IDs and state, including current track, audio offset, and playback preferences). Otherwise, the skill will fail on launch.
 
 To do this, we create a security policy that allows DynamoDB access and attach it to the IAM role that the `aws deploy` command auto-generated for our Lambda function. 
 
@@ -189,21 +190,27 @@ This project contains a JSON file that allows DynamoDB access, but restricts per
     
     If you encounter any errors, add `--debug` to obtain troubleshooting information.
 
-3. Make a note of the `Arn` attached to the newly-created policy, we'll need it to attach the policy.
+3. Make a note of the `Arn` attached to the newly-created policy; we'll need it to attach the policy.
 
 
 4. Next, we'll locate the role that requires the policy. This role was created by the initial `ask deploy` and is typically the most recently-created role (and you should see your NodeJS package name from `lambda/`), so instead of listing all roles with `aws iam list-roles`, we'll add the ``--query`` option to locate the newest role quickly:
 
     ```
-    $ aws iam list-roles --query 'reverse(sort_by(Roles[].[CreateDate,RoleName], &[0]))[0]' --output text
+    $ aws iam list-roles --query 'reverse(sort_by(Roles[].[CreateDate,RoleName], &[0]))[0]' \
+     --output text
 
-    > 2020-08-11T00:08:26+00:00       ask-DemoArcadePartyLambda-default-skillStack-15-AlexaSkillIAMRole-1234567890ABC
+    > 2020-08-11T00:08:26+00:00 ask-DemoArcadePartyLambda-default-skillStack-15-AlexaSkillIAMRole-1234567890ABC
     ``` 
-     Tip: If your organization has a large number of roles that are updated frequently, you can print a list of the newest roles, where YYYY-MM-DD is today's date:
+
+    ---
+     **Tip:** If your organization has a large number of roles that are updated frequently, you can print a list of the newest roles, where YYYY-MM-DD is today's date:
 
     ```
-    $ aws iam list-roles --query 'Roles[?CreateDate>=`YYYY-MM-DD`].[RoleName,CreateDate]' --output text
+    $ aws iam list-roles --query 'Roles[?CreateDate>=`YYYY-MM-DD`].[RoleName,CreateDate]' \
+    --output text
     ```
+   
+   ---
 
 5. We can now attach the policy to our role using the policy Arn and role:
 
@@ -218,9 +225,33 @@ This project contains a JSON file that allows DynamoDB access, but restricts per
 
 You can now open `lambda/index.js` and customize your skill even further. Remember to run `ask deploy` to update your skill after any change.
 
+## Test Your Skill<a name="testing"></a>
+
+There are a number of ways to test your skill, and you'll probably find yourself using every one of them.
+
+You can test from an IDE (you can install the AWS extension for Visual Studio and test directly from the IDE), from the [Lambda console](https://console.aws.amazon.com/lambda), from a device (an Alexa device or the Alexa app on a mobile device), and from the [Alexa Development Console](https://developer.amazon.com/alexa/console/ask).
+
+For specific errors in NodeJS, you may need to test directly from the Lambda UI, an IDE, or the command line. To generate test cases, the Alexa Development Console is really handy, as you can type your queries, then copy the JSON data out, save to a file, and run test cases from the command line. If you share your test cases or check them into Git, be sure to change any identifiers first! 
+
+---
+**Tip:** The `uuidgen` tool on Linux is handy for generating example skill IDs.
+
+___
+
+**To run a test from the command line:**
+
+1. To test your Lambda function at the command line, you can use the following command:
+
+    ```
+    $ aws lambda invoke --function ask-mylambdafunction-AlexaSkillFunction-ABCDEFGHI11 \
+    --payload file://tests/mytestfile.json output.log && cat output.log
+    ```
+    As when loading policies, you will receive encoding errors if you don't include the `file://` uri.
+
+
 ## Clean up unused resources<a name="cleanup"></a>
 
-Because deploying skills this way is pretty speedy, you may find yourself deploying a number of them for testing purposes. Because DynamoDB incurs billing charges, you'll want to delete DynamoDB tables. It's also good practice to delete resources you don't need, like the Lambda function and role. You can do this from the AWS console or from the command line. 
+Because deploying skills this way is simple and fast, you may find yourself deploying a number of them for testing purposes. Because DynamoDB is a billable service, you'll want to delete unused DynamoDB tables. It's also good security practice to delete resources you don't need, like the Lambda function and role. You can do this from the AWS console or from the command line. 
 
 **To delete unused DynamoDB tables using the AWS CLI:**
 
@@ -242,13 +273,18 @@ Because deploying skills this way is pretty speedy, you may find yourself deploy
     ```
     $ aws lambda list-functions
     ```
-2. Delete the function, you can use the Function name or Arn:
+2. Delete the function. You can use the Function name or Arn.
 
     ```
-    aws lambda delete-function --function-name ask-ap_demo-default-default-12345678901
+    $ aws lambda delete-function --function-name ask-ap_demo-default-default-12345678901
     ```
 
-Note: Be careful here; make sure you are deleting the correct function!
+
+    ---
+
+    **Warning!** Be careful here; make sure you are deleting the correct function.
+
+    ---
 
 **To delete unused IAM roles using the AWS CLI:**
 
@@ -277,33 +313,22 @@ Deleting roles is a little more involved, you must detach all policies from the 
 3. Detach the policy (or policies, if applicable):
 
     ```
-    $ aws iam detach-role-policy --role-name "ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-1DCKB83JKAELG" --policy-arn "arn:aws:iam::123456789012:policy/ap_demo_dynamodb"
+    $ aws iam detach-role-policy \
+     --role-name "ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-012345ABCDEF10" \
+     --policy-arn "arn:aws:iam::123456789012:policy/ap_demo_dynamodb"
     ```
-4. Delete the role, you can use the Function name or Arn:
-
-    ```
-    aws iam delete-role --role-name ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-1DCKB83JKAELG
-    ```
-
-Note: Be careful here; make sure you are deleting the correct role!
-
-
-## Testing<a name="testing"></a>
-
-There are a number of ways to test your skill, and you'll probably find yourself using every one of them.
-
-You can test from an IDE (you can install the AWS extension for Visual Studio and test directly from the IDE), from the [Lambda console](https://console.aws.amazon.com/lambda), from a device (an Alexa device or the Alexa app on a mobile device), and from the [Alexa Development Console](https://developer.amazon.com/alexa/console/ask).
-
-For specific errors in NodeJS, you may need to test directly from the Lambda UI, an IDE, or the command line. To generate test cases, the Alexa Development Console is really handy, as you can type your queries, then copy the JSON data out, save to a file, and run test cases from the command line. If you share your test cases or check them into Git, be sure to change any identifiers first (Tip: the `uuidgen` tool on Linux is handy for generating fake skill IDs).
-
-**To run a test from the command line:**
-
-1. To test your Lambda function at the command line, you can use the following command:
+4. Delete the role. 
 
     ```
-    aws lambda invoke --function ask-mylambdafunction-AlexaSkillFunction-ABCDEFGHI11 --payload file://tests/mytestfile.json output.log && cat output.log
+    aws iam delete-role \
+    --role-name ask-apdemo-default-skillStack-15-AlexaSkillIAMRole-012345ABCDEF10
     ```
-    As when loading policies, you will receive encoding errors if you don't include the `file://` uri.
+
+---
+
+**Warning!** Be careful here; make sure you are deleting the correct role.
+
+---
 
 ## Troubleshooting<a name="troubleshooting"></a>
  
@@ -322,31 +347,31 @@ Sometimes you don't have the patience to wait for the CloudWatch console to relo
 2. Run tail for the log group you want to track, and you can use `follow` to watch log events as they arrive (like `tail -f`):
 
     ```
-    aws logs tail /aws/lambda/ask-ArcadePartyNodeJSonLambdaEd-AlexaSkillFunction-ABCD789ASD12 --follow
+    $ aws logs tail --follow \
+      /aws/lambda/ask-ArcadePartyNodeJSonLambdaEd-AlexaSkillFunction-ABCD789ASD12
     ```
 
 ### Common errors 
 
 I tried to configure this project so that you shouldn't run into these issues, but you may well encounter them here or in other projects.
 
-***"The trigger setting for the Lambda function is invalid."***
+- ***"The trigger setting for the Lambda function is invalid."***
 
-If you changed the Lambda function in the manifest and redeployed, even adding the Alexa Skills Kit trigger and skill ID after-the-fact might not 'take.' I was able to work around this by going into the Alexa Console and manually updating the endpoint.
+    If you change the Lambda function in the manifest and redeploy, even adding the Alexa Skills Kit trigger and skill ID after-the-fact might not 'take.' I was able to work around this by going into the Alexa Console and manually updating the endpoint.
 
-Then pull the manifest down from Amazon & copy it over (make a backup first!) your old skills.json:
+    You can then download the manifest & copy it over (make a backup first!) your old skills.json:
 
-```
-ask smapi get-skill-manifest -s amzn1.ask.skill.YOUR_SKILL_UUID -g development >> new-skills.json
-```
-Or just start from scratch! 
+    ```
+    $ ask smapi get-skill-manifest -s amzn1.ask.skill.YOUR_SKILL_UUID -g development >> new-skills.json
+    ```
 
-***"String instance at property path "$.manifest.apis.custom.endpoint.uri\" does not match the regular expression: "^(arn|https://)"***
+- ***"String instance at property path "$.manifest.apis.custom.endpoint.uri\" does not match the regular expression: "^(arn|https://)"***
 
-This and the *Unable to deploy target skill-infrastructure when the skillId has not been created yet* error are a chicken and egg problem I struggled with for awhile: many thanks to [Jose Quinto, who documented the solution](https://blog.josequinto.com/2018/04/25/deploy-alexa-skill-using-already-created-lambda-function-and-role/#Deploy-the-skill). You just need to clear the entire `endpoint` option from your manifest and start a fresh deployment. ASK will add it back after it creates everything. 
+    This and the *Unable to deploy target skill-infrastructure when the skillId has not been created yet* error are a chicken and egg problem I struggled with for awhile: many thanks to [Jose Quinto, who documented the solution](https://blog.josequinto.com/2018/04/25/deploy-alexa-skill-using-already-created-lambda-function-and-role/#Deploy-the-skill). You just need to clear the entire `endpoint` option from your manifest and start a fresh deployment. ASK will add it back after it creates everything. 
 
-Be careful if you do this a lot; you may find yourself with multiple Lambda functions and might discover that you're testing a stale function! (No wonder your changes didn't take!) Check the manifest to make sure that it matches what you're testing or what you think you're testing, especially if you test Lambda functions directly.
+    Be careful if you do this a lot; you may find yourself with multiple Lambda functions and might discover that you're testing a stale function! (No wonder your changes didn't take!) Check the manifest to make sure that it matches what you're testing or what you think you're testing, especially if you test Lambda functions directly.
 
-I removed the `endpoint` option from the `skills.json` file I include in this project, but if you copy skill manifests around like most of us do, you will probably run into the error again!
+    I removed the `endpoint` option from the `skills.json` file I include in this project, but if you copy skill manifests around like most of us do, you will probably run into the error again!
 
 
 ### Cloning Your Skill
@@ -381,12 +406,3 @@ $ ask smapi list-skills-for-vendor
 $ ask smapi export-package -s amzn1.ask.skill.59d694ce-dd0e-4d52-9853-493c0f131b0f -g development
 ```
 
-## Known Issues and "to do"s<a name="knownissues"></a>
-
-- The current behavior is not identical to the released version of Arcade Party (Python/WSGI on Apache). This is currently a hastily put-together proof-of-concept port and a personal project to get more comfortable with Lambda and NodeJS.
-
-- Add test cases.
-
-- Add Python WSGI code and instructions (I started working on the Python tutorial last year and got pulled away, so the code is complete, the Apache configuration instructions are about 75% complete, so it shouldn't take much to add them).
-
-- Port Radio Time Warp/Radio Fun Time.
