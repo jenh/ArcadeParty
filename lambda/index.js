@@ -1,3 +1,5 @@
+/* Adapted from https://github.com/alexa/skill-sample-nodejs-audio-player/ (multiple streams) */
+
 /* eslint-disable  func-names */
 /* eslint-disable  no-console */
 /* eslint-disable  no-restricted-syntax */

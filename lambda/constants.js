@@ -1,4 +1,5 @@
 /* CONSTANTS */
+/* Adapted from https://github.com/alexa/skill-sample-nodejs-audio-player/ (multiple streams) */
 
 exports.skill = {
   appId: '',
