@@ -406,3 +406,4 @@ $ ask smapi list-skills-for-vendor
 $ ask smapi export-package -s amzn1.ask.skill.59d694ce-dd0e-4d52-9853-493c0f131b0f -g development
 ```
 
+* Licensing: ArcadeParty tutorial is licensed with Apache License 2.0. Lambda code from adapted from https://github.com/alexa/skill-sample-nodejs-audio-player to enable this tutorial is licensed under the Amazon Software License.
